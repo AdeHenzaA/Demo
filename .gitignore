@@ -1,0 +1,10 @@
+# Folder virtual environment
+venv/
+.venv/
+
+# Folder setting VS Code
+.vscode/
+
+# File temporary python
+__pycache__/
+*.py[cod]
