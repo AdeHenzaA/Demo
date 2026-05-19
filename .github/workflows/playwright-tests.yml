@@ -1,0 +1,65 @@
+name: Playwright Tests with Allure Report
+
+on:
+  push:
+    branches: [ main, master ]
+  pull_request:
+    branches: [ main, master ]
+
+# Memberikan izin ke token GITHUB_TOKEN untuk menulis ke GitHub Pages
+permissions:
+  contents: write
+  pages: write
+  id-token: write
+
+jobs:
+  test-and-report:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout Repository
+      uses: actions/checkout@v4
+
+    - name: Set up Python
+      uses: actions/setup-python@v5
+      with:
+        python-python: '3.11' # Sesuaikan dengan versi Python kamu
+
+    - name: Install Dependencies
+      run: |
+        python -m pip install --upgrade pip
+        pip install -r requirements.txt
+        # Jika belum ada requirements.txt, bisa pakai:
+        # pip install pytest-playwright allure-pytest
+
+    - name: Install Playwright Browsers
+      run: playwright install --with-deps
+
+    - name: Run Playwright Tests
+      run: pytest --alluredir=allure-results
+      continue-on-error: true # Agar workflow tetap lanjut ke pembuatan report meski ada test yang gagal
+
+    - name: Get Allure History
+      # Langkah ini penting agar grafik riwayat (history trend) di Allure tidak hilang tiap kali run baru
+      uses: actions/checkout@v4
+      if: always()
+      with:
+        ref: gh-pages
+        path: allure-history-repo
+
+    - name: Generate Allure Report
+      uses: simple-elf/allure-report-action@master
+      if: always()
+      id: allure-report
+      with:
+        allure_results: allure-results
+        allure_history: allure-history
+        keep_reports: 20 # Jumlah histori report lama yang ingin disimpan
+
+    - name: Deploy Report to GitHub Pages
+      uses: peaceiris/actions-gh-pages@v4
+      if: always()
+      with:
+        github_token: ${{ secrets.GITHUB_TOKEN }}
+        publish_branch: gh-pages
+        publish_dir: allure-history
