@@ -1,0 +1,1 @@
+[{"uid":"31d4c0ea799767d1","name":"Successful Login and Navigate to Sauce Labs Home","time":{"start":1779207813098,"stop":1779207814577,"duration":1479},"status":"passed","severity":"normal"},{"uid":"80925b1d5bfdbe19","name":"Pengujian Alur Login Utama Saucedemo","time":{"start":1779207812513,"stop":1779207813057,"duration":544},"status":"passed","severity":"normal"}]
