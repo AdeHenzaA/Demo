@@ -1,2 +1,2 @@
-pytest-playwright==1.49.0
-allure-pytest==2.13.5
+pytest-playwright
+allure-pytest
