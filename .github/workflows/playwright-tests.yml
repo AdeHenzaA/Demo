@@ -33,11 +33,13 @@ jobs:
         # pip install pytest-playwright allure-pytest
 
     - name: Install Playwright Browsers
-      run: playwright install --with-deps
+      # Tambahkan kata 'chromium' di akhir perintah ini
+      run: playwright install chromium --with-deps
 
     - name: Run Playwright Tests
-      run: pytest --alluredir=allure-results
-      continue-on-error: true # Agar workflow tetap lanjut ke pembuatan report meski ada test yang gagal
+      # Menambahkan flag --browser chromium
+      run: pytest tests/ --browser chromium --alluredir=allure-results
+      continue-on-error: true
 
     - name: Get Allure History
       # Langkah ini penting agar grafik riwayat (history trend) di Allure tidak hilang tiap kali run baru
