@@ -7,4 +7,11 @@ venv/
 
 # File temporary python
 __pycache__/
+.pytest_cache/
+allure-results/
+log/
 *.py[cod]
+upload.bat
+pytest.ini
+browserstack-cli.exe
+browserstack.yml
