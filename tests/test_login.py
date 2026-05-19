@@ -5,7 +5,7 @@ from pages.login_page import LoginPage
 
 @allure.epic("Authentication Management")
 @allure.feature("Login Feature")
-class Login_Scenarios:
+class Test_LoginScenario:
 
     @allure.story("Positive Login Scenario")
     @allure.title("Login with Valid Credentials")
