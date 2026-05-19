@@ -1,3 +1,0 @@
-"DESCRIPTION","DURATION IN MS","NAME","PARENT SUITE","START TIME","STATUS","STOP TIME","SUB SUITE","SUITE","TEST CLASS","TEST METHOD"
-"","544","Pengujian Alur Login Utama Saucedemo","tests","Tue May 19 16:23:32 UTC 2026","passed","Tue May 19 16:23:33 UTC 2026","","test_login","",""
-"Verify that a standard user can successfully log in to Saucedemo, open the sidebar menu, click the About link, and be successfully redirected to the official Sauce Labs landing page.","1479","Successful Login and Navigate to Sauce Labs Home","tests","Tue May 19 16:23:33 UTC 2026","passed","Tue May 19 16:23:34 UTC 2026","","test_saucedemo","",""
