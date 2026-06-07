@@ -113,6 +113,11 @@ def pytest_runtest_makereport(item, call):
             analisis_ai = terjemahkan_error_with_screenshot(error_log, screenshot_data)
             print(analisis_ai)
             print("=======================================\n")
+
+            with open("ai_output.txt", "w", encoding="utf-8") as f:
+                f.write("=== HASIL ANALISIS REKOMENDASI AI ===\n")
+                f.write(analisis_ai)
+                f.write("\n=======================================\n")
             
             allure.attach(screenshot_data, name="Screenshot Kegagalan", attachment_type=allure.attachment_type.PNG)
             allure.attach(analisis_ai, name="Analisis & Solusi Gemini AI", attachment_type=allure.attachment_type.TEXT)
