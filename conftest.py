@@ -114,7 +114,9 @@ def pytest_runtest_makereport(item, call):
             print(analisis_ai)
             print("=======================================\n")
 
-            with open("ai_output.txt", "w", encoding="utf-8") as f:
+            # --- PERBAIKAN: Gunakan mode "a" (Append) agar tidak saling menghapus ---
+            with open("ai_output.txt", "a", encoding="utf-8") as f:
+                f.write(f"\n📌 FILE TEST: {item.name}\n") # Menampilkan nama fungsi test yang gagal
                 f.write("=== HASIL ANALISIS REKOMENDASI AI ===\n")
                 f.write(analisis_ai)
                 f.write("\n=======================================\n")
