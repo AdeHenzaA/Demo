@@ -78,21 +78,28 @@ jobs:
           COLOR="#36a64f"
         fi
 
+        # Definisikan variabel informasi proyek biasa (tanpa tanda \n manual)
         PROJECT_INFO="*Project:* Demo (GitHub Actions)"
         REPORT_LINK="*Allure Report Link:* https://${{ github.repository_owner }}.github.io/${{ github.event.repository.name }}"
-        FULL_TEXT="${PROJECT_INFO}\n${REPORT_LINK}\n\n*🤖 ANALISIS SOLUSI GEMINI AI:*\n${AI_TEXT}"
 
-        # Menyusun JSON menggunakan jq
+        # FIX: Biarkan jq yang menggabungkan teks dan menyisipkan ENTER (\n) secara resmi ke dalam JSON
         PAYLOAD=$(jq -n \
           --arg color "$COLOR" \
           --arg title "$STATUS_EMOJI" \
-          --arg text "$FULL_TEXT" \
-          '{attachments: [{color: $color, title: $title, text: $text}]}')
+          --arg p_info "$PROJECT_INFO" \
+          --arg r_link "$REPORT_LINK" \
+          --arg ai_text "$AI_TEXT" \
+          '{
+            attachments: [{
+              color: $color,
+              title: $title,
+              text: ($p_info + "\n" + $r_link + "\n\n*🤖 ANALISIS SOLUSI GEMINI AI:*\n" + $ai_text)
+            }]
+          }')
 
         # Kirim payload aman ke Slack
         curl -X POST -H 'Content-type: application/json' --data "$PAYLOAD" "$SLACK_WEBHOOK_URL"
 
-        # Trik Pemaksaan Status Gagal: Jika warna merah, paksa GitHub Actions menjadi silang merah (failed) setelah Slack berbunyi
         if [ "$COLOR" = "#FF0000" ]; then
           echo "Menandai pipeline GitHub Actions sebagai GAGAL karena ada tes yang tidak lolos."
           exit 1
