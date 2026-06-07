@@ -46,4 +46,4 @@ def test_example(page: Page) -> None:
         page.locator("[data-test=\"password\"]").click()
         page.locator("[data-test=\"password\"]").fill("secret_sauce")
         page.locator("[data-test=\"login-button\"]").click()
-        expect(page.get_by_text("ProducSS")).to_be_visible()
+        expect(page.get_by_text("ProducSSS")).to_be_visible()
