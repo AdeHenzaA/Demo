@@ -76,8 +76,10 @@ jobs:
       env:
         SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
       run: |
+        # Memeriksa apakah file ada dan berisi teks hasil analisis AI
         if [ -f ai_output.txt ] && grep -q "HASIL ANALISIS REKOMENDASI AI" ai_output.txt; then
-          AI_TEXT=$(sed -n '/=== HASIL ANALISIS REKOMENDASI AI ===/,/=======================================/p' ai_output.txt | sed '1d;$d')
+          # Membaca seluruh isi file teks secara utuh tanpa pemotongan kaku
+          AI_TEXT=$(cat ai_output.txt)
           STATUS_EMOJI="🔴 *TEST AUTOMATION FAILED*"
           COLOR="#FF0000"
         else
@@ -86,11 +88,10 @@ jobs:
           COLOR="#36a64f"
         fi
 
-        # Definisikan variabel informasi proyek biasa (tanpa tanda \n manual)
         PROJECT_INFO="*Project:* Demo (GitHub Actions)"
         REPORT_LINK="*Allure Report Link:* https://${{ github.repository_owner }}.github.io/${{ github.event.repository.name }}"
 
-        # FIX: Biarkan jq yang menggabungkan teks dan menyisipkan ENTER (\n) secara resmi ke dalam JSON
+        # Menggabungkan teks dengan ENTER (\n) secara resmi ke dalam JSON Slack via jq
         PAYLOAD=$(jq -n \
           --arg color "$COLOR" \
           --arg title "$STATUS_EMOJI" \
@@ -105,10 +106,12 @@ jobs:
             }]
           }')
 
-        # Kirim payload aman ke Slack
         curl -X POST -H 'Content-type: application/json' --data "$PAYLOAD" "$SLACK_WEBHOOK_URL"
 
         if [ "$COLOR" = "#FF0000" ]; then
+          echo "Menandai pipeline GitHub Actions sebagai GAGAL karena ada tes yang tidak lolos."
+          exit 1
+        fi
           echo "Menandai pipeline GitHub Actions sebagai GAGAL karena ada tes yang tidak lolos."
           exit 1
         fi
