@@ -1,0 +1,17 @@
+[
+  {
+    "name": "🤖 Masalah Server Gemini AI (Retry Habis)",
+    "matchedStatuses": ["broken", "failed"],
+    "messageRegex": ".*Gagal memanggil Gemini AI.*"
+  },
+  {
+    "name": "🔍 Elemen Web Tidak Ditemukan (Locator/Timeout)",
+    "matchedStatuses": ["broken", "failed"],
+    "messageRegex": ".*Timeout.*|.*waiting for locator.*|.*Target page closed.*"
+  },
+  {
+    "name": "❌ Kegagalan Validasi Aplikasi (Assertion Failed)",
+    "matchedStatuses": ["failed"],
+    "messageRegex": ".*AssertionError.*|.*to_be_visible.*"
+  }
+]

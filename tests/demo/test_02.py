@@ -3,7 +3,7 @@ from playwright.sync_api import Page, expect
 import allure
 
 @allure.severity(allure.severity_level.CRITICAL) #BLOCKER ,CRITICAL ,NORMAL ,MINOR ,TRIVIAL 
-@allure.feature("Login Tests 1")          
+@allure.feature("Login Tests 2")          
 @allure.story("Negative & Positive Login")     
 @allure.title("Saucedemo Login verification") 
 @allure.description("""
@@ -45,5 +45,5 @@ def test_example(page: Page) -> None:
     with allure.step("Successful login to the main dashboard page"):
         page.locator("[data-test=\"password\"]").click()
         page.locator("[data-test=\"password\"]").fill("secret_sauce")
-        page.locator("[data-test=\"login-butto1n\"]").click()
-        expect(page.get_by_text("Products")).to_be_visible()
+        page.locator("[data-test=\"login-button\"]").click()
+        expect(page.get_by_text("Proaaducts")).to_be_visible()
