@@ -5,11 +5,9 @@ on:
     branches: [ main, master ]
   pull_request:
     branches: [ main, master ]
-env:
-  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
-  
+
 permissions:
-  contents: read # Menggunakan read karena kita sudah migrasi penuh ke direct GitHub Actions Pages
+  contents: read 
   pages: write
   id-token: write
 
@@ -38,9 +36,7 @@ jobs:
         GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }} 
       continue-on-error: true 
       run: |
-        # Menggunakan pengalihan ke file "ai_output.txt" untuk menangkap print hasil analisis AI
         python -m pytest -n 2 -s --alluredir=allure-results > ai_output.txt
-        # Cetak juga ke log GitHub Actions agar Anda tetap bisa membaca langsung dari web GitHub
         cat ai_output.txt
 
     - name: Generate Allure Report
@@ -72,7 +68,6 @@ jobs:
       env:
         SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
       run: |
-        # 1. Pengecekan isi log hasil tes
         if [ -f ai_output.txt ] && grep -q "HASIL ANALISIS REKOMENDASI AI" ai_output.txt; then
           AI_TEXT=$(sed -n '/=== HASIL ANALISIS REKOMENDASI AI ===/,/=======================================/p' ai_output.txt | sed '1d;$d')
           STATUS_EMOJI="🔴 *TEST AUTOMATION FAILED*"
@@ -83,17 +78,22 @@ jobs:
           COLOR="#36a64f"
         fi
 
-        # 2. Definisikan variabel informasi proyek
         PROJECT_INFO="*Project:* Demo (GitHub Actions)"
         REPORT_LINK="*Allure Report Link:* https://${{ github.repository_owner }}.github.io/${{ github.event.repository.name }}"
         FULL_TEXT="${PROJECT_INFO}\n${REPORT_LINK}\n\n*🤖 ANALISIS SOLUSI GEMINI AI:*\n${AI_TEXT}"
 
-        # 3. FIX: Gunakan jq untuk menyusun JSON secara aman tanpa takut tabrakan tanda kutip
+        # Menyusun JSON menggunakan jq
         PAYLOAD=$(jq -n \
           --arg color "$COLOR" \
           --arg title "$STATUS_EMOJI" \
           --arg text "$FULL_TEXT" \
           '{attachments: [{color: $color, title: $title, text: $text}]}')
 
-        # 4. Kirim data payload aman ke Slack
+        # Kirim payload aman ke Slack
         curl -X POST -H 'Content-type: application/json' --data "$PAYLOAD" "$SLACK_WEBHOOK_URL"
+
+        # Trik Pemaksaan Status Gagal: Jika warna merah, paksa GitHub Actions menjadi silang merah (failed) setelah Slack berbunyi
+        if [ "$COLOR" = "#FF0000" ]; then
+          echo "Menandai pipeline GitHub Actions sebagai GAGAL karena ada tes yang tidak lolos."
+          exit 1
+        fi
