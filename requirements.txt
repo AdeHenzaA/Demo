@@ -1,0 +1,7 @@
+pytest-playwright
+allure-pytest
+python-dotenv
+google-genai
+opencv-python-headless
+numpy
+pytest-xdist
