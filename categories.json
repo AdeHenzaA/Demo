@@ -1,5 +1,10 @@
 [
   {
+    "name": "⚠️ AssertionError Akibat Timeout Elemen",
+    "matchedStatuses": ["failed", "broken"],
+    "messageRegex": "(?=.*AssertionError)(?=.*Timeout).*"
+  },
+  {
     "name": "🤖 Masalah Server Gemini AI (Retry Habis)",
     "matchedStatuses": ["broken", "failed"],
     "messageRegex": ".*Gagal memanggil Gemini AI.*"
