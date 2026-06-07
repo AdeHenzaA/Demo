@@ -56,7 +56,7 @@ jobs:
     # --- 3. UPLOAD & PUBLISH DIRECTLY TO GITHUB PAGES WEB LINK ---
     - name: Setup Pages
       if: always()
-      uses: actions/configure-pages@v4
+      uses: actions/configure-pages@v5
 
     - name: Upload Artifact to Pages
       if: always()
