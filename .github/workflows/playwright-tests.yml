@@ -5,7 +5,9 @@ on:
     branches: [ main, master ]
   pull_request:
     branches: [ main, master ]
-
+env:
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
+  
 permissions:
   contents: read # Menggunakan read karena kita sudah migrasi penuh ke direct GitHub Actions Pages
   pages: write
@@ -65,16 +67,13 @@ jobs:
       id: deployment
       uses: actions/deploy-pages@v4
 
-    # --- LANGKAH BARU: KIRIM NOTIFIKASI OTOMATIS KE SLACK ---
     - name: Send Report Notification to Slack
       if: always()
       env:
         SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
       run: |
-        # Mengambil hasil analisis Gemini AI dari file teks sementara yang dibuat di atas
-        # Jika file tidak ada atau kosong, berikan pesan default
+        # 1. Pengecekan isi log hasil tes
         if [ -f ai_output.txt ] && grep -q "HASIL ANALISIS REKOMENDASI AI" ai_output.txt; then
-          # Ekstrak teks yang berada di antara pembatas === HASIL ANALISIS === dan === ALLURE REPORT ===
           AI_TEXT=$(sed -n '/=== HASIL ANALISIS REKOMENDASI AI ===/,/=======================================/p' ai_output.txt | sed '1d;$d')
           STATUS_EMOJI="🔴 *TEST AUTOMATION FAILED*"
           COLOR="#FF0000"
@@ -84,11 +83,17 @@ jobs:
           COLOR="#36a64f"
         fi
 
-        # Bersihkan karakter baru agar JSON tidak rusak saat dikirim via curl Linux
-        AI_TEXT_CLEANED=$(echo "$AI_TEXT" | jq -aR .)
+        # 2. Definisikan variabel informasi proyek
+        PROJECT_INFO="*Project:* Demo (GitHub Actions)"
+        REPORT_LINK="*Allure Report Link:* https://${{ github.repository_owner }}.github.io/${{ github.event.repository.name }}"
+        FULL_TEXT="${PROJECT_INFO}\n${REPORT_LINK}\n\n*🤖 ANALISIS SOLUSI GEMINI AI:*\n${AI_TEXT}"
 
-        # Format pengiriman pesan profesional menggunakan struktur Slack Attachments
-        PAYLOAD="{\"attachments\": [{\"color\": \"$COLOR\", \"title\": \"$STATUS_EMOJI\", \"text\": \"*Project:* Demo (GitHub Actions)\n*Allure Report Link:* https://${{ github.repository_owner }}.github.io/${{ github.event.repository.name }}\n\n*🤖 ANALISIS SOLUSI GEMINI AI:*\n$AI_TEXT_CLEANED\"}]}"
+        # 3. FIX: Gunakan jq untuk menyusun JSON secara aman tanpa takut tabrakan tanda kutip
+        PAYLOAD=$(jq -n \
+          --arg color "$COLOR" \
+          --arg title "$STATUS_EMOJI" \
+          --arg text "$FULL_TEXT" \
+          '{attachments: [{color: $color, title: $title, text: $text}]}')
 
-        # Eksekusi pengiriman data via curl ke server Slack
+        # 4. Kirim data payload aman ke Slack
         curl -X POST -H 'Content-type: application/json' --data "$PAYLOAD" "$SLACK_WEBHOOK_URL"
