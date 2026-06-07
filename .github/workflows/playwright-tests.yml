@@ -5,10 +5,8 @@ on:
     branches: [ main, master ]
   pull_request:
     branches: [ main, master ]
-
-# Izin akses resmi yang dibutuhkan oleh sistem GitHub Pages Actions
 permissions:
-  contents: read # Kembali ke read-only karena kita tidak perlu menulis ke branch gh-pages lagi
+  contents: read 
   pages: write
   id-token: write
 
@@ -27,12 +25,11 @@ jobs:
 
     - name: Install Dependencies
       run: |
-        python -m pip install --upgrade pip
         pip install -r requirements.txt
 
     - name: Ensure Playwright Browsers
-      run: playwright install chromium --with-deps
-
+      run: playwright install chromium
+      
     - name: Run Pytest in Parallel (2 Workers)
       env:
         GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }} 
@@ -40,7 +37,6 @@ jobs:
       run: |
         python -m pytest -n 2 -s --alluredir=allure-results
 
-    # --- MEMBUAT ALLURE REPORT HTML MENGGUNAKAN ACTION RESMI ---
     - name: Generate Allure Report
       uses: simple-elf/allure-report-action@master
       if: always()
@@ -50,7 +46,6 @@ jobs:
         allure_history: allure-history
         keep_reports: 20
 
-    # --- PUBLIKASI LANGSUNG DENGAN METODE GITHUB ACTIONS PAGES ---
     - name: Setup Pages
       if: always()
       uses: actions/configure-pages@v5
