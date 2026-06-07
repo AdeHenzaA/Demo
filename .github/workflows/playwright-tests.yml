@@ -5,8 +5,9 @@ on:
     branches: [ main, master ]
   pull_request:
     branches: [ main, master ]
+
 permissions:
-  contents: read 
+  contents: read # Menggunakan read karena kita sudah migrasi penuh ke direct GitHub Actions Pages
   pages: write
   id-token: write
 
@@ -27,15 +28,18 @@ jobs:
       run: |
         pip install -r requirements.txt
 
-    - name: Ensure Playwright Browsers
+    - name: Ensure Playwright Browser
       run: playwright install chromium
-      
+
     - name: Run Pytest in Parallel (2 Workers)
       env:
         GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }} 
       continue-on-error: true 
       run: |
-        python -m pytest -n 2 -s --alluredir=allure-results
+        # Menggunakan pengalihan ke file "ai_output.txt" untuk menangkap print hasil analisis AI
+        python -m pytest -n 2 -s --alluredir=allure-results > ai_output.txt
+        # Cetak juga ke log GitHub Actions agar Anda tetap bisa membaca langsung dari web GitHub
+        cat ai_output.txt
 
     - name: Generate Allure Report
       uses: simple-elf/allure-report-action@master
@@ -54,9 +58,37 @@ jobs:
       if: always()
       uses: actions/upload-pages-artifact@v3
       with:
-        path: 'allure-history' # Folder hasil keluaran dari allure-report-action
+        path: 'allure-history'
 
     - name: Deploy Allure Report Web
       if: always()
       id: deployment
       uses: actions/deploy-pages@v4
+
+    # --- LANGKAH BARU: KIRIM NOTIFIKASI OTOMATIS KE SLACK ---
+    - name: Send Report Notification to Slack
+      if: always()
+      env:
+        SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
+      run: |
+        # Mengambil hasil analisis Gemini AI dari file teks sementara yang dibuat di atas
+        # Jika file tidak ada atau kosong, berikan pesan default
+        if [ -f ai_output.txt ] && grep -q "HASIL ANALISIS REKOMENDASI AI" ai_output.txt; then
+          # Ekstrak teks yang berada di antara pembatas === HASIL ANALISIS === dan === ALLURE REPORT ===
+          AI_TEXT=$(sed -n '/=== HASIL ANALISIS REKOMENDASI AI ===/,/=======================================/p' ai_output.txt | sed '1d;$d')
+          STATUS_EMOJI="🔴 *TEST AUTOMATION FAILED*"
+          COLOR="#FF0000"
+        else
+          AI_TEXT="Semua skenario pengujian berhasil dilewati dengan sukses tanpa adanya eror. Pertahankan kode Anda!"
+          STATUS_EMOJI="🟢 *TEST AUTOMATION PASSED*"
+          COLOR="#36a64f"
+        fi
+
+        # Bersihkan karakter baru agar JSON tidak rusak saat dikirim via curl Linux
+        AI_TEXT_CLEANED=$(echo "$AI_TEXT" | jq -aR .)
+
+        # Format pengiriman pesan profesional menggunakan struktur Slack Attachments
+        PAYLOAD="{\"attachments\": [{\"color\": \"$COLOR\", \"title\": \"$STATUS_EMOJI\", \"text\": \"*Project:* Demo (GitHub Actions)\n*Allure Report Link:* https://${{ github.repository_owner }}.github.io/${{ github.event.repository.name }}\n\n*🤖 ANALISIS SOLUSI GEMINI AI:*\n$AI_TEXT_CLEANED\"}]}"
+
+        # Eksekusi pengiriman data via curl ke server Slack
+        curl -X POST -H 'Content-type: application/json' --data "$PAYLOAD" "$SLACK_WEBHOOK_URL"
