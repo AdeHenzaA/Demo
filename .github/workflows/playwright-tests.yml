@@ -37,6 +37,14 @@ jobs:
       continue-on-error: true 
       run: |
         python -m pytest -n 2 -s --alluredir=allure-results 
+    # --- SISIPI PERINTAH SALIN KATEGORI DI SINI ---
+    - name: Copy Custom Categories Configuration
+      if: always()
+      run: |
+        # Buat foldernya jika belum ada (antisipasi jika tes lolos semua dan folder kosong)
+        mkdir -p allure-results
+        # Salin file kategori ke dalam folder hasil allure
+        cp categories.json allure-results/
 
 
     - name: Generate Allure Report
