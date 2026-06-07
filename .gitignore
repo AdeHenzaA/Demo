@@ -4,7 +4,7 @@ venv/
 
 # Folder setting VS Code
 .vscode/
-
+.env
 # File temporary python
 __pycache__/
 .pytest_cache/
